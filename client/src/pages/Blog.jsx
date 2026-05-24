@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { assets } from '../assets/assets'
 import Navbar from '../component/Navbar'
@@ -24,7 +24,7 @@ function Blog() {
   const [content, setContent] = useState('')
 
   /* ================= FETCH BLOG ================= */
-  const fetchBlogData = async () => {
+  const fetchBlogData = useCallback(async () => {
     try {
       // ⬅️ Fetch single blog using ID
       const { data } = await axios.get(`/api/blog/${id}`)
@@ -37,10 +37,10 @@ function Blog() {
     } catch (error) {
       toast.error(error.message)
     }
-  }
+  }, [axios, id])
 
   /* ================= FETCH COMMENTS ================= */
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       // ⬅️ Fetch only approved comments for this blog
       const { data } = await axios.post('/api/blog/comment', {
@@ -55,7 +55,7 @@ function Blog() {
     } catch (error) {
       toast.error(error.message)
     }
-  }
+  }, [axios, id])
 
   /* ================= ADD COMMENT ================= */
   const addComment = async (e) => {
@@ -88,7 +88,7 @@ function Blog() {
   useEffect(() => {
     fetchBlogData()
     fetchComments()
-  }, [])
+  }, [fetchBlogData, fetchComments])
 
   // ⬅️ Loader until blog data arrives
   if (!data) return <Loader />

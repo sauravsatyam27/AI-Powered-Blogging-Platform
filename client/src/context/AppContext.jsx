@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
@@ -15,8 +15,21 @@ export const AppProvider = ({ children }) => {
 
   // ⬅️ Global states
   const [token, setToken] = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
   const [blogs, setBlogs] = useState([])
   const [input, setInput] = useState('')
+
+  const clearAdminSession = useCallback(() => {
+    localStorage.removeItem('token')
+    setToken(null)
+    delete axios.defaults.headers.common['Authorization']
+  }, [])
+
+  const setAdminSession = useCallback((adminToken) => {
+    localStorage.setItem('token', adminToken)
+    setToken(adminToken)
+    axios.defaults.headers.common['Authorization'] = `Bearer ${adminToken}`
+  }, [])
 
   /* ================= FETCH BLOGS ================= */
   const fetchBlogs = async () => {
@@ -36,25 +49,38 @@ export const AppProvider = ({ children }) => {
 
   /* ================= INIT ================= */
   useEffect(() => {
-    // ⬅️ Initial blog load on app start
-    fetchBlogs()
+    const initializeApp = async () => {
+      fetchBlogs()
 
-    // ⬅️ Token localStorage se uthaya ja raha hai
-    const storedToken = localStorage.getItem('token')
+      // ⬅️ Token localStorage se uthaya ja raha hai
+      const storedToken = localStorage.getItem('token')
 
-    if (storedToken) {
-      // ⬅️ Token available → user already logged in
-      setToken(storedToken)
+      if (!storedToken) {
+        clearAdminSession()
+        setAuthLoading(false)
+        return
+      }
 
-      // ⬅️ Default Authorization header set
-      axios.defaults.headers.common['Authorization'] =
-        `Bearer ${storedToken}`
-    } else {
-      // ⬅️ No token → clean auth state
-      setToken(null)
-      delete axios.defaults.headers.common['Authorization']
+      try {
+        axios.defaults.headers.common['Authorization'] =
+          `Bearer ${storedToken}`
+
+        const { data } = await axios.get('/api/admin/verify')
+
+        if (data.success) {
+          setToken(storedToken)
+        } else {
+          clearAdminSession()
+        }
+      } catch {
+        clearAdminSession()
+      } finally {
+        setAuthLoading(false)
+      }
     }
-  }, [])
+
+    initializeApp()
+  }, [clearAdminSession])
 
   // ⬅️ Values exposed to entire application
   const value = {
@@ -62,6 +88,9 @@ export const AppProvider = ({ children }) => {
     navigate,
     token,
     setToken,
+    authLoading,
+    clearAdminSession,
+    setAdminSession,
     blogs,
     setBlogs,
     input,

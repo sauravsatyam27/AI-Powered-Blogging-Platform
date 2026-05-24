@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { assets } from '../../assets/assets'
 import BlogTableItem from '../../component/admin/BlogTableItem'
 import { useAppContext } from '../../context/AppContext'
@@ -18,7 +18,7 @@ const Dashboard = () => {
   })
 
   // ⬅️ Fetch dashboard summary data
-  const fetchDashboard = async () => {
+  const fetchDashboard = useCallback(async () => {
     try {
       const { data } = await axios.get('/api/admin/dashboard')
 
@@ -30,12 +30,12 @@ const Dashboard = () => {
     } catch (error) {
       toast.error(error.message)
     }
-  }
+  }, [axios])
 
   // ⬅️ Load dashboard data on component mount
   useEffect(() => {
     fetchDashboard()
-  }, [])
+  }, [fetchDashboard])
 
   return (
     <div className="flex-1 p-4 md:p-10 bg-blue-50/50">

@@ -6,13 +6,11 @@ import { useAppContext } from '../../context/AppContext'
 
 function Layout() {
   const navigate = useNavigate()
-  const { axios, setToken } = useAppContext()
+  const { axios, clearAdminSession } = useAppContext()
 
   // ⬅️ Logout handler
   const logout = () => {
-    localStorage.removeItem('token')
-    setToken(null)
-    delete axios.defaults.headers.common['Authorization']
+    clearAdminSession()
     navigate('/admin')
   }
 
@@ -21,10 +19,8 @@ function Layout() {
     const interceptor = axios.interceptors.response.use(
       res => res,
       err => {
-        if (err.response?.data?.message === 'Invalid or expired token') {
-          localStorage.removeItem('token')
-          setToken(null)
-          delete axios.defaults.headers.common['Authorization']
+        if ([401, 403].includes(err.response?.status)) {
+          clearAdminSession()
           navigate('/admin')
         }
         return Promise.reject(err)
@@ -35,7 +31,7 @@ function Layout() {
     return () => {
       axios.interceptors.response.eject(interceptor)
     }
-  }, [])
+  }, [axios, clearAdminSession, navigate])
 
   return (
     <>

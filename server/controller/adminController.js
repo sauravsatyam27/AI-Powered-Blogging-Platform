@@ -11,6 +11,8 @@ export const adminLogin = async (req, res) => {
 
     // ⬅️ Admin credentials ko env variables se match kar rahe hain
     // Is approach se admin data DB mein store nahi hota (more secure)
+
+    
     if (
       email !== process.env.ADMIN_EMAIL ||
       password !== process.env.ADMIN_PASSWORD
@@ -22,8 +24,12 @@ export const adminLogin = async (req, res) => {
     }
 
     // ⬅️ JWT token generate kar rahe hain for authentication
-    // Ye token future admin requests ko verify karne ke kaam aayega
-    const token = jwt.sign({ email }, process.env.JWT_SECRET);
+    // Role claim se backend confirm karega ki token admin ka hi hai
+    const token = jwt.sign(
+      { email, role: "admin" },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     // ⬅️ Token frontend ko send kar diya
     res.json({
@@ -37,6 +43,14 @@ export const adminLogin = async (req, res) => {
       message: error.message,
     });
   }
+};
+
+// ===================== VERIFY ADMIN TOKEN =====================
+export const verifyAdmin = async (req, res) => {
+  res.json({
+    success: true,
+    admin: req.admin
+  });
 };
 
 // ===================== GET ALL BLOGS (ADMIN) =====================

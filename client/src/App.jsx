@@ -11,9 +11,14 @@ import Login from './component/admin/Login'
 import 'quill/dist/quill.snow.css'
 import { Toaster } from 'react-hot-toast'
 import { useAppContext } from './context/AppContext'
+import Loader from './component/Loader'
 
 function App() {
-  const { token } = useAppContext()
+  const { token, authLoading } = useAppContext()
+
+  if (authLoading) {
+    return <Loader />
+  }
 
   return (
     <div className="">
@@ -24,17 +29,17 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/blog/:id" element={<Blog />} />
 
-        {/* ===== ADMIN ROUTE (ALWAYS EXISTS) ===== */}
-        <Route path="/admin" element={token ? <Layout /> : <Login />}>
-          {token && (
-            <>
-              <Route index element={<Dashboard />} />
-              <Route path="addBlog" element={<AddBlog />} />
-              <Route path="listBlog" element={<ListBlog />} />
-              <Route path="comments" element={<Comments />} />
-            </>
-          )}
-        </Route>
+        {/* ===== ADMIN ROUTES ===== */}
+        {token ? (
+          <Route path="/admin" element={<Layout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="addBlog" element={<AddBlog />} />
+            <Route path="listBlog" element={<ListBlog />} />
+            <Route path="comments" element={<Comments />} />
+          </Route>
+        ) : (
+          <Route path="/admin/*" element={<Login />} />
+        )}
       </Routes>
     </div>
   )

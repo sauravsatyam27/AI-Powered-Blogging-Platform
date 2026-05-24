@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import BlogTableItem from '../../component/admin/BlogTableItem'
 import { useAppContext } from '../../context/AppContext'
 import toast from 'react-hot-toast'
@@ -8,7 +8,7 @@ const ListBlog = () => {
   const [blogs, setBlogs] = useState([])
   const { axios } = useAppContext()
 
-  const fetchBlogs = async () => {
+  const fetchBlogs = useCallback(async () => {
     try {
       const { data } = await axios.get('/api/admin/blogs')
 
@@ -20,11 +20,11 @@ const ListBlog = () => {
     } catch (error) {
       toast.error(error.message)
     }
-  }
+  }, [axios])
 
   useEffect(() => {
     fetchBlogs()
-  }, [])
+  }, [fetchBlogs])
 
   return (
     <div className="flex-1 pt-5 px-5 sm:pt-12 sm:pl-16 bg-blue-50/50">

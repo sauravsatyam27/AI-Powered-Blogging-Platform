@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import CommentsTableItem from '../../component/admin/CommentsTableItem'
 import { useAppContext } from '../../context/AppContext'
 import toast from 'react-hot-toast'
@@ -14,7 +14,7 @@ function Comments() {
   const { axios } = useAppContext()
 
   // ⬅️ Fetch all comments for admin
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       const { data } = await axios.get('/api/admin/comments')
 
@@ -26,12 +26,12 @@ function Comments() {
     } catch (error) {
       toast.error(error.message)
     }
-  }
+  }, [axios])
 
   // ⬅️ Load comments on page mount
   useEffect(() => {
     fetchComments()
-  }, [])
+  }, [fetchComments])
 
   return (
     <div className="flex-1 pt-5 px-5 sm:pt-12 sm:pl-16 bg-blue-50/50">

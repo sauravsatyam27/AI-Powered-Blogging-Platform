@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 const Login = () => {
 
   // ⬅️ axios, auth token setter & navigation from global context
-  const { axios, setToken, navigate } = useAppContext();
+  const { axios, setAdminSession, navigate } = useAppContext();
 
   // ⬅️ Controlled form state
   const [email, setEmail] = useState('');
@@ -24,14 +24,7 @@ const Login = () => {
 
       if (data.success) {
         // ⬅️ Token ko global state + localStorage dono mein save kar rahe hain
-        setToken(data.token);
-        localStorage.setItem('token', data.token);
-
-        // ⬅️ Default Authorization header set
-        // Taki future requests automatically authenticated ho
-        axios.defaults.headers.common[
-          'Authorization'
-        ] = `Bearer ${data.token}`;
+        setAdminSession(data.token);
 
         toast.success('Login successful');
 
